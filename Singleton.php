@@ -9,9 +9,10 @@
 //学校代码
 //请参考   江西省100所高校.csv  或    江西省100所高校.xlsx
 $school_id = "4136010403";
-
 //请输入你的学号，不是两位数的
 $sid = "1008611";//学号
+//请参考 http://sc.ftqq.com/3.version
+$SCKEY = "";//可选的SCKEY
 
 $cookie_jar = __DIR__ . "/cookies/{$sid}.cookie";
 file_put_contents($cookie_jar, "");
@@ -39,12 +40,19 @@ if(!isset($de_res)){
 echo $de_res['msg'];//直接输出签到信息
 
 //自己可以去扩展
-if($de_res['code'] === 1001 || $de_res['code'] === 1002){
-    // code 值代表的意思
-    // 1001 签到成功
-    // 1002 今日已经签到
+// 1001 签到成功
+// 1002 今日已经签到
+if($de_res['code'] === 1001){
+    echo "[签到成功]\n";
+    $TEXT = "签到成功[1001]";
+}else if($de_res['code'] === 1002){
+    echo "[今日已经签到]\n";
+    $TEXT = "今日已经签过啦[1002]";
+}else{
+    echo "[UNknown Code]\n";
+    $TEXT = "UNknown Code:".$de_res['code'];
 }
-
+file_get_contents('https://sc.ftqq.com/'.$SCKEY.'.send?text='.urlencode($TEXT).'&desp='.urlencode($de_res['msg']));
 
 ########################################################################################################
 
