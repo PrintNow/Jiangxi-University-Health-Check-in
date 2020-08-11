@@ -114,9 +114,14 @@ province=江西省
 
 # 使用方法
 1. 修改 `Singleton.php` 第 11 行 学校代码（这个你往下翻有个 **江西省100所高校代码**）
-2. 修改 `Singleton.php` 第 14 行 你的学号
+2. 修改 `Singleton.php` 第 13 行 你的学号
 3. 然后通过访问 `http://你的域名/Singleton.php` 即可
-4. 或者通过 `CLI` 运行 `php Singleton.php`
+4. 或者使用 `crontab` 定时运行 `php -f Singleton.php`
+    ```bash
+    apt install php7.2-cli
+    sudo apt install php-curl
+    ```
+    \[可选项\]推送到微信：修改 `Singleton.php` 第 15 行 [SCKEY](http://sc.ftqq.com/?c=code)（参见[Server酱](http://sc.ftqq.com/3.version)）
 
 # API
 1. 登录 API
