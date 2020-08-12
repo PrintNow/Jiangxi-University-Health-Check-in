@@ -6,18 +6,26 @@
  * Email: <chenwenzhou@aliyun.com>
  */
 
+//---------------重要提示-------------//
+########请仔细阅读 README.md 或 本文件代码 再食用！########
+########请仔细阅读 README.md 或 本文件代码 再食用！########
+########请仔细阅读 README.md 或 本文件代码 再食用！########
+//---------------重要提示-------------//
+
 //学校代码
-//请参考   江西省100所高校.csv  或    江西省100所高校.xlsx
+//请参考 README.md、江西省100所高校.csv 或 江西省100所高校.xlsx
 $school_id = "4136010403";
-//请输入你的学号，不是两位数的
+
+//请输入你的完整学号，不是两位数的
 $sid = "1008611";//学号
+
 //请参考 http://sc.ftqq.com/3.version
 $SCKEY = "";//可选的SCKEY
 
 $cookie_jar = __DIR__ . "/cookies/{$sid}.cookie";
 file_put_contents($cookie_jar, "");
 
-//执行登录
+//执行登录，并将 cookie 文件存放至 $cookie_jar
 curlGet("https://fxgl.jx.edu.cn/{$school_id}/public/homeQd?loginName={$sid}&loginType=0", $cookie_jar);
 
 //执行签到
@@ -28,31 +36,39 @@ $res = curlPost("https://fxgl.jx.edu.cn/{$school_id}/studentQd/saveStu", $cookie
     //转换成地址就是  江西省赣州市寻乌县东江源大道1号寻乌县人民政府
     //province 参数为 江西省  |  city 参数为 赣州市  |  district 参数为 寻乌县
     //那么 street 参数就应该为  东江源大道1号寻乌县人民政府
+    //sfby 参数：1 表示不是毕业班学生，0：表示时毕业班学生
     build_sign_data(
-    "江西省", "赣州市", "寻乌县", "", 1, 115.64852, 24.95513
-));
+        "江西省", "赣州市", "寻乌县", "", 1, 115.64852, 24.95513
+    ));
+
+//将 json 解析成数组(Array)
 $de_res = json_decode($res, true);
 
-if(!isset($de_res)){
+//解析失败返回 API 结果
+if (!isset($de_res)) {
+    echo "解析 json 失败，API 返回结果：";
     die($res);
 }
-
-echo $de_res['msg'];//直接输出签到信息
 
 //自己可以去扩展
 // 1001 签到成功
 // 1002 今日已经签到
-if($de_res['code'] === 1001){
-    echo "[签到成功]\n";
+if ($de_res['code'] === 1001) {
     $TEXT = "签到成功[1001]";
-}else if($de_res['code'] === 1002){
-    echo "[今日已经签到]\n";
+} else if ($de_res['code'] === 1002) {
     $TEXT = "今日已经签过啦[1002]";
-}else{
-    echo "[UNknown Code]\n";
-    $TEXT = "UNknown Code:".$de_res['code'];
+} else {
+    $TEXT = "UNknown Code: {$de_res['code']}, reason: {$de_res['msg']}";
 }
-file_get_contents('https://sc.ftqq.com/'.$SCKEY.'.send?text='.urlencode($TEXT).'&desp='.urlencode($de_res['msg']));
+
+//输出签到结果
+echo $TEXT . PHP_EOL;
+
+//如果 $SCKEY 不为空
+//则进行推送消息
+if (!empty($SCKEY)) {
+    file_get_contents('https://sc.ftqq.com/' . $SCKEY . '.send?text=' . urlencode($TEXT) . '&desp=' . urlencode($de_res['msg']));
+}
 
 ########################################################################################################
 
@@ -89,7 +105,9 @@ function build_sign_data(
         "mqtw" => 0,
         "mqtwxq" => "",
 
-        "zddlwz" => $province . $city . $district,//省市县(区) 拼接结果
+        //还需要将 $street 拼接，否则“签到记录中缺失具体的街道信息”
+        //参考：https://github.com/PrintNow/Jiangxi-University-Health-Check-in/issues/2#issuecomment-672447041
+        "zddlwz" => $province . $city . $district . $street,//省市县(区)街道 拼接结果
         "sddlwz" => "",
         "bprovince" => $province,
         "bcity" => $city,
@@ -107,11 +125,11 @@ function build_sign_data(
 
 
 /**
- * curlGET
- * @param string $API           需要请求的API
- * @param string $cookie_jar    jar 文件路径
- * @param array  $header        需要发送的 header
- * @param int    $timout        请求超时时间
+ * curl GET
+ * @param string $API 需要请求的 URL
+ * @param string $cookie_jar 存放 cookie 文件路径
+ * @param array $header 需要发送的 header
+ * @param int $timout 请求超时时间
  * @return bool|string
  */
 function curlGet($API, $cookie_jar, $header = [], $timout = 5)
@@ -148,12 +166,12 @@ function curlGet($API, $cookie_jar, $header = [], $timout = 5)
 
 
 /**
- * curlPOST
- * @param string $API           需要请求的API
- * @param string $cookie_jar    jar 文件路径
- * @param array $data           需要发送的POST数据
- * @param array $header         需要发送的 header
- * @param int $timeout          请求超时时间
+ * curl POST
+ * @param string $API 需要请求的 URL
+ * @param string $cookie_jar 存放 cookie 文件路径
+ * @param array $data 需要发送的POST数据
+ * @param array $header 需要发送的 header
+ * @param int $timeout 请求超时时间
  * @return bool|string
  */
 function curlPost($API = "", $cookie_jar = "", $data = [], $header = [], $timeout = 5)
