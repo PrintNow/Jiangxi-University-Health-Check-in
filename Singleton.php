@@ -62,7 +62,7 @@ file_get_contents('https://sc.ftqq.com/'.$SCKEY.'.send?text='.urlencode($TEXT).'
  * @param string $province 省份
  * @param string $city 市
  * @param string $district 区、县
- * @param string $street 街道【可以为空】
+ * @param string $street 街道【H5环境下可选项】
  * @param int $sfby 是否为毕业班的学生   0:是毕业班的学生    1:不是毕业班的学生
  * @param float $lng 经度 180 ~ -180
  * @param float $lat 维度  90 ~ -90
