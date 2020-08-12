@@ -1,12 +1,12 @@
-# Jiangxi-University-Health-Check-in
+# 🏫 Jiangxi-University-Health-Check-in
 > # 本仓库内容仅供学习参考，请不要依赖自动签到，确保自己提交的信息真实有效。参与抗疫人人有责
 > ## 请注意，学校都是我虚构的，我并不是在 **南昌大学** {滑稽}，因为学校标识码它排第一，那我直接用它来讲
 PHP版本 江西省普通高等学校 校园防疫 健康签到 自动签到程序
 
-# 抓包过程
+# 📝 抓包过程
 > 根据老师说的，在 支付宝 -> 江西省终身学习卡 -> 小程序 -> 校园防疫 -> 健康签到  进行签到
 >
-> 然后我就尝试 `HttpCanary` APP 对**支付宝**抓包，但是我发现，并不能正常抓包，直接阻断了，只抓到一条关于 `alipay.com` 域名的
+> 然后我就尝试 `HttpCanary` APP 直接对**支付宝**抓包，但是我发现，并不能正常抓包，直接阻断了，只抓到一条关于 `alipay.com` 域名的
 > 然后小程序提示加载失败
 >
 > 我就想到了支付宝可能对抓包有所屏蔽，网上搜的解决办法就是要装 `Xposed`、`Magisk`
@@ -22,7 +22,8 @@ PHP版本 江西省普通高等学校 校园防疫 健康签到 自动签到程�
 > 
 > ### 请往下看分析过程
 
-# 分析过程
+# 🎯 分析过程
+> 重点从第 5 点开始
 1. 发现网址 `https://fxgl.jx.edu.cn/4136010403/index` 中的 `4136010403` 有点神秘，我就去网上搜，搜索结果发现这是一个高校代码，
 **4136010403** 代表的是 *南昌大学*
 2. 这个应该全省高校公用的一个系统，通过 高校代码 进行区分，然后我在教育部网站，从 [全国高等学校名单](http://www.moe.gov.cn/srcsite/A03/moe_634/201706/t20170614_306900.html) 摘取了江西省部分，共计100所(不包含 **成人高等学校**)
@@ -81,7 +82,7 @@ PHP版本 江西省普通高等学校 校园防疫 健康签到 自动签到程�
     
     }
     ```
-5. 重点是 `window.location.href = "public/homeQd?loginName=" + loginName + '&loginType='+loginType;` 这一段代码，发现通过
+5. **重点**是 `window.location.href = "public/homeQd?loginName=" + loginName + '&loginType='+loginType;` 这一段代码，发现通过
 访问这个网址可以直接登录 `loginName` 是 *学号*，`loginType` 猜测是 *登录类型*，学生是 `0`，教职工是 `1`
 6. 尝试拼接参数通过这个网址登录，果不其然，可以直接登录，搞不太懂为什么要验证验证码，然后拼接此参数进行登录。不过也还好给了我们这些**懒人机会**
 7. 登录操作已经完成了，现在进行签到抓包了，发现也是比较简单，向 `https://fxgl.jx.edu.cn/4136010403/studentQd/saveStu` POST 一些参数即可
@@ -113,20 +114,26 @@ province=江西省
 &sfby=1
 ```
 
-# 使用方法
-1. 修改 `Singleton.php` 第 11 行 学校代码（这个你往下翻有个 **江西省100所高校代码**）
-2. 修改 `Singleton.php` 第 13 行 你的学号
-3. 然后通过访问 `http://你的域名/Singleton.php` 即可
+# 🧀 使用方法
+> 很乐意解决你在使用过程中遇到的问题，不出意外的话我会在 **24小时** 内查看并回复你，欢迎 [issues](https://github.com/PrintNow/Jiangxi-University-Health-Check-in/issues)
+
+1. 修改 `Singleton.php` 第 17 行 学校代码（这个你往下翻有个 **江西省100所高校代码**）
+2. 修改 `Singleton.php` 第 20 行 你的学号
+3. 部署到虚拟主机，然后通过访问 `http://你的域名/Singleton.php` 即可
 4. 或者使用 `crontab` 定时运行 `php -f Singleton.php`
+    > `crontab` 使用方法可以网上查找资料
     ```bash
-    apt install php7.2-cli
+    # Ubuntu 安装 php 方法，其它如 CentOS 可以网上搜
+    sudo apt install php7.2-cli
     sudo apt install php-curl
     ```
-    \[可选项\]推送到微信：修改 `Singleton.php` 第 15 行 [SCKEY](http://sc.ftqq.com/?c=code)（参见[Server酱](http://sc.ftqq.com/3.version)）
+    \[可选项\]推送到微信：修改 `Singleton.php` 第 23 行 [SCKEY](http://sc.ftqq.com/?c=code)（参见[Server酱](http://sc.ftqq.com/3
+    .version)）
 
-# 关于 ``street`` 参数与 ``zddlwz`` 参数
-基于对签到数据的改动较以往数据尽量小的原则，作详细说明。  
-定位部分为三个环境：
+# ❗ 关于 ``street`` 参数与 ``zddlwz`` 参数
+> 基于对签到数据的改动较以往数据尽量小的原则，作详细说明（感谢  [@ChiuJun](https://github.com/ChiuJun) > 
+>[issues: street参数确定是可选项吗？](https://github.com/PrintNow/Jiangxi-University-Health-Check-in/issues/2#issuecomment-672447041) ）  
+> 定位部分为三个环境：
 1. 支付宝环境  
 支付宝环境需要 ``street`` 参数，参考[支付宝H5开放文档](https://myjsapi.alipay.com/jsapi/native/get-current-location.html)   
  ``street`` 参数由返回结果的 ``pois[0].address`` 与 ``pois[0].name`` 拼接而成，最后再拼接成 ``address.zddlwz`` 
@@ -154,7 +161,7 @@ H5环境 ``street`` 参数为可选项，对于H5环境的同学，不需要对 
     ```JavaScript
     var addressStr = address.province + address.city + address.district;
     ```
-# API
+# 🎨 相关 API 说明
 1. 登录 API
     > GET，需要 302 跟随，因为登录成功后会跳转至首页
 
@@ -166,7 +173,15 @@ H5环境 ``street`` 参数为可选项，对于H5环境的同学，不需要对 
 
     https://fxgl.jx.edu.cn/学校标识码/studentQd/saveStu    
 
-# 江西省100所高校代码
+# 🙇‍ 感谢名单
+> 感谢它们对本项目做出的贡献
+- [@ChiuJun](https://github.com/ChiuJun)
+
+# 🏫 江西省100所高校代码
+> ‼‼‼ 人工摘抄可能有遗漏的地方，具体请以实际为准
+>
+> 快捷键 `CTRL + F` 可快速搜索你的学校
+>
 > 数据来源于：http://www.moe.gov.cn/srcsite/A03/moe_634/201706/t20170614_306900.html
 
 |学校名称           |学校标识码     |主管部门      |所在地 |办学层次|备注 |
