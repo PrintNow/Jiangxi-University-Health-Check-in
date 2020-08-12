@@ -1,4 +1,5 @@
 # Jiangxi-University-Health-Check-in
+> # 本仓库内容仅供学习参考，请不要依赖自动签到，确保自己提交的信息真实有效。参与抗疫人人有责
 > ## 请注意，学校都是我虚构的，我并不是在 **南昌大学** {滑稽}，因为学校标识码它排第一，那我直接用它来讲
 PHP版本 江西省普通高等学校 校园防疫 健康签到 自动签到程序
 
@@ -123,6 +124,36 @@ province=江西省
     ```
     \[可选项\]推送到微信：修改 `Singleton.php` 第 15 行 [SCKEY](http://sc.ftqq.com/?c=code)（参见[Server酱](http://sc.ftqq.com/3.version)）
 
+# 关于 ``street`` 参数与 ``zddlwz`` 参数
+基于对签到数据的改动较以往数据尽量小的原则，作详细说明。  
+定位部分为三个环境：
+1. 支付宝环境  
+支付宝环境需要 ``street`` 参数，参考[支付宝H5开放文档](https://myjsapi.alipay.com/jsapi/native/get-current-location.html)   
+ ``street`` 参数由返回结果的 ``pois[0].address`` 与 ``pois[0].name`` 拼接而成，最后再拼接成 ``address.zddlwz`` 
+    ```JavaScript
+    address.street = result.pois[0].address + result.pois[0].name;
+    //...
+    var zddlwz =address.province+address.city+address.district+address.street;
+    ```
+    而 ``Singleton.php`` 中 ``$street`` 为空，并且没有将 ``$street`` 拼接至 ``zddlwz``  ,所以造成了本签到程序提交的**签到记录中缺失具体的街道信息**。  
+考虑到大部分人的环境都是支付宝，***建议将具体的街道信息加入到POST参数中***  
+    修改 `Singleton.php` 第 92 行为
+    ```JavaScript
+    "zddlwz" => $province . $city . $district . $street,//自动地理位置：省市县(区)街道 拼接结果
+    ```
+2. 微信环境  
+微信环境中同样需要 ``street`` 参数，并且不同于支付宝环境，微信环境中 ``street`` 参数不包含 ``streetNumber`` 信息，拼接地理位置时 ``zddlwz`` 同样需要详细到街道号。  
+至于 ``street`` 参数中具体填什么，建议自行查看微信小程序开发者文档。
+    ```JavaScript
+    address.street = addComp.street;
+    //...
+    address.zddlwz = addComp.province+addComp.city+addComp.district+addComp.street+addComp.streetNumber;
+    ```
+3. H5环境  
+H5环境 ``street`` 参数为可选项，对于H5环境的同学，不需要对 ``Singleton.php`` 做额外更改。
+    ```JavaScript
+    var addressStr = address.province + address.city + address.district;
+    ```
 # API
 1. 登录 API
     > GET，需要 302 跟随，因为登录成功后会跳转至首页
